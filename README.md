@@ -5,7 +5,7 @@ Paste as png file from clipboard.
 ## Installation
 
 ```
-go get github.com/mattn/pastepng
+go install github.com/mattn/pastepng@latest
 ```
 
 ## License
