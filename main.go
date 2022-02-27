@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"syscall"
@@ -88,16 +89,25 @@ func savePNG(fileName string, newBMP []byte) error {
 	}
 	return nil
 }
+
 func main() {
+	flag.Parse()
+
 	winapi.OpenClipboard(0)
 	defer winapi.CloseClipboard()
 
+	names := flag.Args()
+	if len(names) == 0 {
+		names = []string{"clipboard.png"}
+	}
 	if hMem := winapi.GetClipboardData(winapi.CF_DIB); hMem != 0 {
 		if lpBuff := winapi.GlobalLock(winapi.HGLOBAL(hMem)); lpBuff != nil {
 			size, _, _ := procGlobalSize.Call(uintptr(hMem))
 			ba := (*[1 << 32]byte)(unsafe.Pointer(lpBuff))[:size-10]
-			if err := savePNG("clipboard.png", ba[:]); err != nil {
-				fmt.Fprintln(os.Stderr, os.Args[0]+":", err)
+			for _, name := range names {
+				if err := savePNG(name, ba[:]); err != nil {
+					fmt.Fprintln(os.Stderr, os.Args[0]+":", err)
+				}
 			}
 			winapi.GlobalUnlock(winapi.HGLOBAL(hMem))
 		}
